@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
+  flatland_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -153,8 +154,8 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(1_wheelchair_controller src/custom_robot_controller.cpp)
-target_link_libraries(1_wheelchair_controller ${catkin_LIBRARIES})
+add_executable(wheelchair_controller src/wheelchair_controller.cpp)
+target_link_libraries(wheelchair_controller ${catkin_LIBRARIES})
 
 #############
 ## Install ##

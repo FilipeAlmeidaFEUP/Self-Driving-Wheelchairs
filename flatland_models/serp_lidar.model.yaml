@@ -107,3 +107,7 @@ plugins:
     #noise_std_dev: 0.015
     update_rate: 10
     layers: ["static"]
+
+  - type: Bumper
+    name: bumper
+    update_rate: 10
