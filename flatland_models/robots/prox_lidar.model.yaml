@@ -14,11 +14,10 @@ bodies:
         density: 1
 
 plugins:
-
   - type: Laser
-    name: prox_laser
-    frame: prox_laser_link
-    topic: prox_laser
+    name: prox_laser1
+    frame: prox_laser_link1
+    topic: prox_laser1
     body: base_prox
     broadcast_tf: true
     origin: [0.0, 0.0, 0.0]
@@ -27,4 +26,18 @@ plugins:
     angle: {min: -3.14159265359, max: 3.14159265359, increment: 0.06981317007}
     noise_std_dev: 0.015
     update_rate: 10
-    layers: ["all"]
+    layers: ["robot1"]
+
+  - type: Laser
+    name: prox_laser2
+    frame: prox_laser_link2
+    topic: prox_laser2
+    body: base_prox
+    broadcast_tf: true
+    origin: [0.0, 0.0, 0.0]
+    range: 10
+    # angle: {min: -3.14159265359, max: 3.14159265359, increment: 0.05235987755}
+    angle: {min: -3.14159265359, max: 3.14159265359, increment: 0.06981317007}
+    noise_std_dev: 0.015
+    update_rate: 10
+    layers: ["robot2"]

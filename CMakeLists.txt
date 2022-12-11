@@ -154,8 +154,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(wheelchair_controller src/wheelchair_controller.cpp)
-target_link_libraries(wheelchair_controller ${catkin_LIBRARIES})
+add_executable(wheelchair_controller1 src/wheelchair_controller1.cpp)
+add_executable(wheelchair_controller2 src/wheelchair_controller2.cpp)
+target_link_libraries(wheelchair_controller1 ${catkin_LIBRARIES})
+target_link_libraries(wheelchair_controller2 ${catkin_LIBRARIES})
 
 #############
 ## Install ##
