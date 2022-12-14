@@ -1,0 +1,17 @@
+properties: {}
+layers:
+  - name: ["static", "robot1", "robot2", "col"]
+    map: "map.yaml"
+    color: [0.4, 0.4, 0.4, 1]
+models:
+  - name: prox
+    model: "../../flatland_models/robots/prox_lidar.model.yaml"
+    pose: [2.5, 2.35, 0]
+    
+  - name: robot1
+    model: "../../flatland_models/robots/robot1.model.yaml"
+    pose: [0.4, 0.5, 1.57079632679]
+
+  - name: robot2
+    model: "../../flatland_models/robots/robot2.model.yaml"
+    pose: [0.8, 0.5, 1.57079632679]
