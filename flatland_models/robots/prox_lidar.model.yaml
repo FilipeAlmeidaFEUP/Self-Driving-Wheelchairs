@@ -12,6 +12,7 @@ bodies:
         radius: 0.1
         center: [0.0, 0.0]
         density: 1
+        layers: ["end"]
 
 plugins:
   - type: Laser

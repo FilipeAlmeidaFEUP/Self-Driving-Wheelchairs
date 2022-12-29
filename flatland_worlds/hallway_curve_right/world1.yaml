@@ -18,7 +18,7 @@ layers:
 models:
   - name: prox
     model: "../../flatland_models/robots/prox_lidar.model.yaml"
-    pose: [0.6, 2.5, 0]
+    pose: [2.5, 2.35, 0]
     
   - name: robot1
     model: "../../flatland_models/robots/robot1.model.yaml"

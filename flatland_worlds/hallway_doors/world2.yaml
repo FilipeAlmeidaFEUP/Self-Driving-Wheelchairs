@@ -1,18 +1,6 @@
 properties: {}
 layers:
-  - name: "static"
-    map: "map.yaml"
-    color: [0.4, 0.4, 0.4, 1]
-  - name: "robot1"
-    map: "map.yaml"
-    color: [0.4, 0.4, 0.4, 1]
-  - name: "robot2"
-    map: "map.yaml"
-    color: [0.4, 0.4, 0.4, 1]
-  - name: "collisions"
-    map: "map.yaml"
-    color: [0.4, 0.4, 0.4, 1]
-  - name: "end"
+  - name: ["static", "robot1", "robot2", "col"]
     map: "map.yaml"
     color: [0.4, 0.4, 0.4, 1]
 models:
