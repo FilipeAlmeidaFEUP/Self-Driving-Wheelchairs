@@ -1,38 +1,50 @@
 #!/usr/bin/env python3
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
-from rl.agents import DQNAgent
-from rl.policy import BoltzmannQPolicy
-from rl.memory import SequentialMemory
+#path to catkin workspace:
+path_to_catkin = '/home/filipe/catkin_ws/'
 
-train_steps = 50000
-test_episodes = 100
+#load wheights from file:
+load = False
+load_file = 'dqn_weights.h5f'
+load_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + load_file
+
+#save wheights to file:
+save = False
+save_file = 'dqn_weights.h5f'
+save_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + save_file
+
+#save data to file:
+save_data = False
+data_file = 'data.csv'
+data_file = path_to_catkin + 'src/autowheelchairs_flatland/src/data/' + data_file
+
+#dont train (0), train by number of steps (1), train by threshold (2)
+train = 2
+#if train by number of steps
+nsteps = 50000
+#if train by threshold
 acc_thresh = 0.7
 forward_movement_thresh = 0.8
-path_to_catkin = ''
-weights_file_name = 'dqn_weights.h5f'
-weights_file_path = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + weights_file_name
 
-map = 5
-map_start_poimts = [[(0.6, 0.5, 0.6, 2.5)], # 0 - straight hallway
-                    [(0.6, 0.5, 0.6, 2.5),(1.85, 0.5, 1.85, 2.5),(3.1, 0.5, 3.1, 2.5)], # 1 - 3 straight hallways
-                    [(0.6, 0.5, 0.6, 2.5),(1.85, 0.5, 1.85, 2.5),(3.1, 0.5, 3.1, 2.5),(4.35, 0.5, 4.35, 2.5),(5.6, 0.5, 5.6, 2.5),(6.85, 0.5, 6.85, 2.5)], # 2 - 6 straight hallways
-                    [(0.6, 0.5, 2.5, 2.35)], # 3 - right turns
-                    [(2.4, 0.5, 0.45, 2.35)], # 4 - left turns
-                    [(0.6, 0.5, 2.5, 2.35),(5.4, 0.5, 3.5, 2.35)], # 5 - left and right turns
-                    [(0.6, 0.5, 2.5, 2.35),(5.4, 0.5, 3.5, 2.35),(6.6, 0.5, 8.5, 2.35),(11.4, 0.5, 9.5, 2.35)]] # 6 - all turns
+#test the wheights
+test = False
+test_episodes = 100
 
-def build_model(states, actions):
-    model = Sequential()    
-    model.add(Dense(24, activation='relu', input_shape=states))
-    model.add(Dense(24, activation='relu'))
-    model.add(Flatten())
-    model.add(Dense(actions, activation='linear'))
-    return model
-
-def build_agent(model, actions):
-    policy = BoltzmannQPolicy()
-    memory = SequentialMemory(limit=50000, window_length=1)
-    dqn = DQNAgent(model=model, memory=memory, policy=policy,  nb_actions=actions, nb_steps_warmup=100, target_model_update=1e-2)
-    return dqn
+#maps to use
+maps = {
+    'straight_hallway':{'usage':True, 'robot_space':(0.725, 3.5, 'h'), 'end_space':(0.725, 5.5, 'h')},
+    'left_door':       {'usage':True, 'robot_space':(2.225, 3.5, 'h'), 'end_space':(2.225, 5.5, 'h')},
+    'center_door':     {'usage':True, 'robot_space':(3.725, 3.5, 'h'), 'end_space':(3.725, 5.5, 'h')},
+    'right_door':      {'usage':True, 'robot_space':(5.225, 3.5, 'h'), 'end_space':(5.225, 5.5, 'h')},
+    'two_doors':       {'usage':True, 'robot_space':(6.725, 3.5, 'h'), 'end_space':(6.725, 5.5, 'h')},
+    'small_obstacle':  {'usage':True, 'robot_space':(8.225, 3.5, 'h'), 'end_space':(8.225, 5.5, 'h')},
+    'big_obstacle':    {'usage':True, 'robot_space':(9.725, 3.5, 'h'), 'end_space':(9.725, 5.5, 'h')},
+    'turn_left':       {'usage':True, 'robot_space':(2.5, 2.4, 'v'), 'end_space':(0.6, 0.5, 'h')},
+    'turn_right':      {'usage':True, 'robot_space':(0.6, 0.5, 'h'), 'end_space':(2.5, 2.4, 'v')},
+    'curve_left':      {'usage':True, 'robot_space':(5.5, 2.4, 'v'), 'end_space':(3.6, 0.5, 'h')},
+    'curve_right':     {'usage':True, 'robot_space':(3.6, 0.5, 'h'), 'end_space':(5.5, 2.4, 'v')},
+    'full_turn_left':  {'usage':True, 'robot_space':(8.07, 0.5, 'h'), 'end_space':(6.93, 0.5, 'h')},
+    'full_turn_right': {'usage':True, 'robot_space':(6.93, 0.5, 'h'), 'end_space':(8.07, 0.5, 'h')},
+    'full_curve_left': {'usage':True, 'robot_space':(11.4, 0.5, 'h'), 'end_space':(9.6, 0.5, 'h')},
+    'full_curve_right':{'usage':True, 'robot_space':(9.6, 0.5, 'h'), 'end_space':(11.4, 0.5, 'h')}
+}
