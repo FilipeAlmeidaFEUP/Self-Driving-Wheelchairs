@@ -3,13 +3,13 @@
 import globals
 import numpy as np
 from tensorflow.keras.optimizers import Adam
-from envs.one_wheelchair_env import OneWheelchairEnv, OneWheelchairEnvWithDistance
+from envs.one_wheelchair_env import OneWheelchairEnv
+from envs.one_wheelchair_env_with_dist import  OneWheelchairEnvWithDist
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from rl.agents import DQNAgent
 from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
-from gym.wrappers.flatten_observation import FlattenObservation
 
 def build_model(states, actions):
     model = Sequential()    
@@ -44,25 +44,39 @@ if __name__ == '__main__':
         dqn.load_weights(globals.load_file)
 
     if globals.train == 1:
+        env.task = 'train'
         dqn.fit(env, nb_steps=globals.nsteps, visualize=False, verbose=1)
         if globals.save:
             dqn.save_weights(globals.save_file, overwrite=True)
     elif globals.train == 2:
         env.reset_counters()
+        max_acc = 0
+        i=1
         while(globals.acc_thresh > ((env.success_episodes / env.total_episodes) if env.total_episodes else 0) or 
                 globals.forward_movement_thresh > ((env.forward_steps / env.total_steps) if env.total_steps else 0)):
+            env.task = 'train'
             dqn.fit(env, nb_steps=10000, visualize=False, verbose=1)
-            if globals.save:
-                dqn.save_weights(globals.save_file, overwrite=True)
 
             env.reset_counters()
+            env.task = 'test'
+            print('\n', 'Test number:', i)
             scores = dqn.test(env, nb_episodes=globals.test_episodes, visualize=False)
-            print('Accurancy:', env.success_episodes / env.total_episodes, '/', globals.acc_thresh)
+            acc = env.success_episodes / env.total_episodes
+            print('Accurancy:', acc, '/', globals.acc_thresh)
             print('Forward movements', env.forward_steps / env.total_steps, '/', globals.forward_movement_thresh)
+            if globals.save and acc > max_acc:
+                max_acc = acc
+                dqn.save_weights(globals.save_file, overwrite=True)
+                if globals.save_data: env.dump_data(globals.data_file)
+            i+=1
 
     if globals.test:
+        env.reset_counters()
+        env.task = 'test'
         scores = dqn.test(env, nb_episodes=globals.test_episodes, visualize=False)
-        print(np.mean(scores.history['episode_reward']))
+        env.success_episodes / env.total_episodes
+        print('Accurancy:', env.success_episodes / env.total_episodes, '/', globals.acc_thresh)
+        print('Forward movements', env.forward_steps / env.total_steps, '/', globals.forward_movement_thresh)
 
     if globals.save_data:
         env.dump_data(globals.data_file)
