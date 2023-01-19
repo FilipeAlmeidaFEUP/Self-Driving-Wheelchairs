@@ -97,7 +97,7 @@ class OneWheelchairEnv(Env):
             done = True
             self.data['end_condition'][-1] = 'collision'
         elif self.finished:
-            reward = 400 + ((self.max_episodes - ((self.episode) * 200) / self.max_episodes))
+            reward = 400 + ((self.max_episodes - (self.episode * 200) / self.max_episodes))
             done = True
             self.data['end_condition'][-1] = 'finished'
         elif self.episode > self.max_episodes:
@@ -223,7 +223,7 @@ class OneWheelchairEnv(Env):
         
         self.lidar_sample.append((data.ranges[math.ceil(len(data.ranges) / 2) - 1]))
         self.lidar_sample.append((data.ranges[(math.ceil(len(data.ranges) / 2) - 1) - (each // 2)]))
-        self.lidar_sample.append((data.ranges[(math.ceil(len(data.ranges) / 2) - 1) - (each // 2)]))
+        self.lidar_sample.append((data.ranges[(math.ceil(len(data.ranges) / 2) - 1) + (each // 2)]))
         self.lidar_sample.append((data.ranges[math.ceil(len(data.ranges) / 4) - 1]))
         self.lidar_sample.append((data.ranges[math.ceil(len(data.ranges) * (3/4)) - 1]))
 

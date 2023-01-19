@@ -167,8 +167,34 @@ for file in files:
             ax.set_ylabel('y')
             ax.set_xlabel('x')
 
+            if(maps[map_n] in ['straight_hallway','left_door','center_door', 'right_door','two_doors','small_obstacle','big_obstacle']):
+                yrange = (-0.5,2.5)
+                xrange = (-0.5,0.5)
+                fig = plt.figure(figsize=(3,6), dpi=200)
+                left, bottom, width, height = 0.1, 0.3, 0.6, 0.6
+                ax = fig.add_axes([left, bottom, width, height]) 
+
+                ax.set_ylabel('y')
+                ax.set_xlabel('x')
+            elif('right' in maps[map_n]):
+                yrange = (-0.5,2.5)
+                xrange = (-0.5,2.5)
+            else:
+                if('half' in maps[map_n]):
+                    yrange = (-2.5,0.5)
+                    xrange = (-2.5,0.5)
+                else:
+                    yrange = (-0.5,2.5)
+                    xrange = (-2.5,0.5)
+
             for line in paths_by_map[map_n]:
-                plt.plot(line[0], line[1], alpha=0.2, color='Blue')
+                pltx = []
+                plty = []
+                for (x,y) in zip(line[0], line[1]):
+                    if x > xrange[0] and x < xrange[1] and y > yrange[0] and y < yrange[1]:
+                        pltx.append(x)
+                        plty.append(y)
+                plt.plot(pltx, plty, alpha=0.2, color='Blue')
             
             plt.savefig('graphs/paths/train_' + file + '_test_' + maps[map_n] + '.png', bbox_inches = 'tight')
 
