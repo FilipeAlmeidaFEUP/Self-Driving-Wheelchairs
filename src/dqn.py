@@ -5,6 +5,7 @@ import numpy as np
 from tensorflow.keras.optimizers import Adam
 from envs.one_wheelchair_env import OneWheelchairEnv
 from envs.one_wheelchair_env_with_dist import  OneWheelchairEnvWithDist
+from envs.two_wheelchair_env import TwoWheelChairEnv
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from rl.agents import DQNAgent
@@ -26,7 +27,10 @@ def build_agent(model, actions):
     return dqn
 
 if __name__ == '__main__':
-    env = OneWheelchairEnv()
+    if globals.use_two_wc:
+        env = TwoWheelChairEnv()
+    else:
+        env = OneWheelchairEnv()
     env.reset_robots()
     for map in globals.maps.items():
         if map[1]['usage']:

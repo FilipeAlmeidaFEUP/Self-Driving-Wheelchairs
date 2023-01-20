@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #path to catkin workspace:
-path_to_catkin = ''
+path_to_catkin = '/home/filipe/catkin_ws/'
 
 #load wheights from file:
 load = False
@@ -10,20 +10,23 @@ load_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + load_
 
 #save wheights to file:
 save = True
-save_file = 'none.h5f'
+save_file = 'twowc_train_straight.h5f'
 save_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + save_file
 
 #save data to file:
 save_data = True
-data_file = 'none.csv'
-data_file = path_to_catkin + 'src/autowheelchairs_flatland/src/data/onewc/train/' + data_file
+data_file = 'twowc_train_straight.csv'
+data_file = path_to_catkin + 'src/autowheelchairs_flatland/src/data/twowc/' + data_file
+
+#true to use 2 wheelchairs
+use_two_wc = True
 
 #dont train (0), train by number of steps (1), train by threshold (2)
 train = 2
 #if train by number of steps
 nsteps = 50000
 #if train by threshold
-acc_thresh = 2
+acc_thresh = 0.8
 forward_movement_thresh = 0
 
 #test the wheights
