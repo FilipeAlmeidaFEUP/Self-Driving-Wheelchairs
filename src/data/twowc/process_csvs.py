@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-files = ['straight']
-no_test = ['straight']
+files = ['straight', 'straight_large_target', 'straight_less_actions', 'turns']
+no_test = ['straight', 'straight_large_target', 'straight_less_actions']
 maps = ['straight_hallway','left_door','center_door',
         'right_door','two_doors','small_obstacle',
         'big_obstacle','turn_left','turn_right',
@@ -23,6 +23,7 @@ for file in files:
     n_steps = []
     reward_per_test = []
     end_conditions_per_test = [[], [], []]
+    adjacency = []
 
     values = []
 
@@ -34,14 +35,23 @@ for file in files:
             n_steps.append([])
             reward_per_test.append([])
             for end_condition_type in end_conditions_per_test: end_condition_type.append(0)
+            adjacency.append([])
 
         actions = list(map(int, row['actions'].strip('][').split(', ')))
         for action in actions:
-            if action == 2: actions_per_test[0][-1] += 1
-            elif action == 0: actions_per_test[1][-1] += 1
-            elif action == 3 or action == 4: actions_per_test[2][-1] += 1
-            elif action == 1: actions_per_test[3][-1] += 1
-            elif action == 5 or action == 6: actions_per_test[4][-1] += 1
+            action1 = action // 7
+            action2 = action % 7
+            if action1 == 2: actions_per_test[0][-1] += 1
+            elif action1 == 0: actions_per_test[1][-1] += 1
+            elif action1 == 3 or action1 == 4: actions_per_test[2][-1] += 1
+            elif action1 == 1: actions_per_test[3][-1] += 1
+            elif action1 == 5 or action1 == 6: actions_per_test[4][-1] += 1
+
+            if action2 == 2: actions_per_test[0][-1] += 1
+            elif action2 == 0: actions_per_test[1][-1] += 1
+            elif action2 == 3 or action2 == 4: actions_per_test[2][-1] += 1
+            elif action2 == 1: actions_per_test[3][-1] += 1
+            elif action2 == 5 or action2 == 6: actions_per_test[4][-1] += 1
 
         n_steps[-1].append(len(actions))
 
@@ -51,6 +61,9 @@ for file in files:
         if row['end_condition'] == 'finished': end_conditions_per_test[0][-1] += 0.01
         elif row['end_condition'] == 'collision': end_conditions_per_test[1][-1] += 0.01
         elif row['end_condition'] == 'time out': end_conditions_per_test[2][-1] += 0.01
+
+        adj = list(map(int, row['adjacency'].strip('][').split(', ')))
+        adjacency[-1].append(sum(adj)/len(adj))
 
         i += 1
     
@@ -129,10 +142,63 @@ for file in files:
 
     plt.clf()
 
+    #adjacency
+    for i in range(len(adjacency)):
+        adjacency[i] = sum(adjacency[i])/len(adjacency[i])
+
+    fig = plt.figure(figsize=(6,5), dpi=200)
+    left, bottom, width, height = 0.1, 0.3, 1.0, 0.6
+    ax = fig.add_axes([left, bottom, width, height]) 
+
+    ax.set_ylabel('Average adjacency')
+    ax.set_xlabel('Test number')
+
+    plt.plot(list(range(1, len(n_steps) + 1)), adjacency)
+    plt.savefig('graphs/adj/' + file + '.png', bbox_inches = 'tight')
+
+    plt.clf()
+
     #values
     values.append('Training:\n')
     values.append('Accuracy achieved: ' + str(end_conditions_per_test[0][-1]) + '\n')
+    values.append('Adjacency: ' + str(adjacency[-1]) + '\n')
     values.append('Trained for ' + str(len(n_steps) * 10000) + ' steps\n\n')
 
     with open('values/' + file + '.txt', 'w+') as f:
         f.writelines(values)
+
+
+
+data = pd.read_csv('test/turns_full_left_turn.csv')
+data = data.drop(data[data.task == 'train'].index)
+
+wc1 = []
+wc2 = []
+
+for index, row in data.iterrows():
+    paths = row['positions'].replace('(', '').replace(')', '')
+    paths = list(map(float, paths.strip('][').split(', ')))
+    wc1.append(([],[]))
+    wc2.append(([],[]))
+
+    for i in range(len(paths)//6):
+        wc1[-1][0].append(paths[i*6] - 8.07)
+        wc1[-1][1].append(paths[i*6 + 1] - 0.5)
+        wc2[-1][0].append(paths[i*6 + 3] - 8.07)
+        wc2[-1][1].append(paths[i*6 + 4] - 0.5)
+
+fig = plt.figure(figsize=(6,6), dpi=200)
+left, bottom, width, height = 0.1, 0.3, 0.6, 0.6
+ax = fig.add_axes([left, bottom, width, height]) 
+
+ax.set_ylabel('y')
+ax.set_xlabel('x')
+
+for path in wc1:
+    plt.plot(path[0], path[1], alpha=0.2, color='Blue')
+for path in wc2:
+    plt.plot(path[0], path[1], alpha=0.2, color='Red')
+            
+plt.savefig('graphs/paths/paths.png', bbox_inches = 'tight')
+
+plt.clf()

@@ -6,6 +6,8 @@ from tensorflow.keras.optimizers import Adam
 from envs.one_wheelchair_env import OneWheelchairEnv
 from envs.one_wheelchair_env_with_dist import  OneWheelchairEnvWithDist
 from envs.two_wheelchair_env import TwoWheelChairEnv
+from envs.two_wheelchair_env_large_target import TwoWheelChairEnvLargeTarget
+from envs.two_wheelchair_env_less_actions import TwoWheelChairEnvLessActions
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from rl.agents import DQNAgent
@@ -28,7 +30,7 @@ def build_agent(model, actions):
 
 if __name__ == '__main__':
     if globals.use_two_wc:
-        env = TwoWheelChairEnv()
+        env = TwoWheelChairEnvLessActions()
     else:
         env = OneWheelchairEnv()
     env.reset_robots()
@@ -68,6 +70,7 @@ if __name__ == '__main__':
             acc = env.success_episodes / env.total_episodes
             print('Accurancy:', acc, '/', globals.acc_thresh)
             print('Forward movements', env.forward_steps / env.total_steps, '/', globals.forward_movement_thresh)
+            print('Adjacency', env.adj_steps / env.total_steps)
             if globals.save and acc > max_acc:
                 max_acc = acc
                 dqn.save_weights(globals.save_file, overwrite=True)
@@ -81,6 +84,7 @@ if __name__ == '__main__':
         env.success_episodes / env.total_episodes
         print('Accurancy:', env.success_episodes / env.total_episodes, '/', globals.acc_thresh)
         print('Forward movements', env.forward_steps / env.total_steps, '/', globals.forward_movement_thresh)
+        print('Adjacency', env.adj_steps / env.total_steps)
 
     if globals.save_data:
         env.dump_data(globals.data_file)
