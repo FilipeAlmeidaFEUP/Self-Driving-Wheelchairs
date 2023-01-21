@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 #path to catkin workspace:
-path_to_catkin = '/home/filipe/catkin_ws/'
+path_to_catkin = ''
 
 #load wheights from file:
-load = True
-load_file = 'twowc_train_straight_less_actions.h5f'
+load = False
+load_file = 'none.h5f'
 load_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + load_file
 
 #save wheights to file:
 save = False
-save_file = 'twowc_train_turns.h5f'
+save_file = 'none.h5f'
 save_file = path_to_catkin + 'src/autowheelchairs_flatland/src/weights/' + save_file
 
 #save data to file:
@@ -48,6 +48,6 @@ maps = {
     'curve_right':     {'usage':False, 'robot_space':(3.6, 0.5, 'h'), 'end_space':(5.5, 2.4, 'v')},
     'full_turn_left':  {'usage':False, 'robot_space':(8.07, 0.5, 'h'), 'end_space':(6.93, 0.5, 'h')},
     'full_turn_right': {'usage':False, 'robot_space':(6.93, 0.5, 'h'), 'end_space':(8.07, 0.5, 'h')},
-    'full_curve_left': {'usage':True, 'robot_space':(11.4, 0.5, 'h'), 'end_space':(9.6, 0.5, 'h')},
-    'full_curve_right':{'usage':False, 'robot_space':(9.6, 0.5, 'h'), 'end_space':(11.4, 0.5, 'h')}
+    'full_curve_left': {'usage':False, 'robot_space':(11.4, 0.5, 'h'), 'end_space':(9.6, 0.5, 'h')},
+    'full_curve_right':{'usage':True, 'robot_space':(9.6, 0.5, 'h'), 'end_space':(11.4, 0.5, 'h')}
 }
