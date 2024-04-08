@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-files = ['straight', 'straight_large_target', 'straight_less_actions', 'turns']
-no_test = ['straight', 'straight_large_target', 'straight_less_actions']
+files = ['new_tests']
+no_test = ['straight']
 maps = ['straight_hallway','left_door','center_door',
         'right_door','two_doors','small_obstacle',
         'big_obstacle','turn_left','turn_right',
@@ -39,8 +39,8 @@ for file in files:
 
         actions = list(map(int, row['actions'].strip('][').split(', ')))
         for action in actions:
-            action1 = action // 7
-            action2 = action % 7
+            action1 = action // 3
+            action2 = action % 3
             if action1 == 2: actions_per_test[0][-1] += 1
             elif action1 == 0: actions_per_test[1][-1] += 1
             elif action1 == 3 or action1 == 4: actions_per_test[2][-1] += 1
@@ -62,8 +62,8 @@ for file in files:
         elif row['end_condition'] == 'collision': end_conditions_per_test[1][-1] += 0.01
         elif row['end_condition'] == 'time out': end_conditions_per_test[2][-1] += 0.01
 
-        adj = list(map(int, row['adjacency'].strip('][').split(', ')))
-        adjacency[-1].append(sum(adj)/len(adj))
+        #adj = list(map(int, row['adjacency'].strip('][').split(', ')))
+        #adjacency[-1].append(sum(adj)/len(adj))
 
         i += 1
     
@@ -142,6 +142,8 @@ for file in files:
 
     plt.clf()
 
+    '''
+    
     #adjacency
     for i in range(len(adjacency)):
         adjacency[i] = sum(adjacency[i])/len(adjacency[i])
@@ -157,6 +159,7 @@ for file in files:
     plt.savefig('graphs/adj/' + file + '.png', bbox_inches = 'tight')
 
     plt.clf()
+    '''
 
     #values
     values.append('Training:\n')
@@ -168,7 +171,7 @@ for file in files:
         f.writelines(values)
 
 
-
+'''
 data = pd.read_csv('test/turns_full_left_turn.csv')
 data = data.drop(data[data.task == 'train'].index)
 
@@ -202,3 +205,4 @@ for path in wc2:
 plt.savefig('graphs/paths/paths.png', bbox_inches = 'tight')
 
 plt.clf()
+'''

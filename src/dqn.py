@@ -15,7 +15,7 @@ from rl.policy import BoltzmannQPolicy
 from rl.memory import SequentialMemory
 
 def build_model(states, actions):
-    model = Sequential()    
+    model = Sequential()
     model.add(Dense(24, activation='relu', input_shape=states))
     model.add(Dense(24, activation='relu'))
     model.add(Flatten())
@@ -42,9 +42,9 @@ if __name__ == '__main__':
     actions = env.action_space.n
     
     model = build_model(states, actions)
-    #model.summary()
+    print(model.summary())
     dqn = build_agent(model, actions)
-    dqn.compile(Adam(lr=1e-3), metrics=['mae'])
+    dqn.compile(Adam(lr=1e-4), metrics=['mae'])
 
     if globals.load:
         dqn.load_weights(globals.load_file)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         while(globals.acc_thresh > ((env.success_episodes / env.total_episodes) if env.total_episodes else 0) or 
                 globals.forward_movement_thresh > ((env.forward_steps / env.total_steps) if env.total_steps else 0)):
             env.task = 'train'
-            dqn.fit(env, nb_steps=10000, visualize=False, verbose=1)
+            dqn.fit(env, nb_steps=20000, visualize=False, verbose=1)
 
             env.reset_counters()
             env.task = 'test'
