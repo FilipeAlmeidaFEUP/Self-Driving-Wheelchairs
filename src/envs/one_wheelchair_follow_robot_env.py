@@ -440,8 +440,8 @@ class OneWheelchairFollowRobotEnv(Env):
 
     def change_robot_speed(self, robot, linear, angular):
         twist_msg = Twist()
-        twist_msg.linear.x = 0
-        twist_msg.angular.z = 0
+        twist_msg.linear.x = linear
+        twist_msg.angular.z = angular
 
         if(robot == 1):
             self.twist_pub.publish(twist_msg)
