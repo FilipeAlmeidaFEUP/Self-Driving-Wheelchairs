@@ -17,6 +17,9 @@ import time
 class OneWheelchairFollowWallEnv(Env):
 
     def __init__(self):
+        self.overload_pos = {}
+        self.map_names = []
+
         #current data
         self.episode = 0
         self.steps = 0
@@ -26,7 +29,7 @@ class OneWheelchairFollowWallEnv(Env):
         self.front_split = 9
         self.back_split = 3
         self.split = self.front_split + self.back_split
-        self.ideal_dist = 0.4
+        self.ideal_dist = 0.3
         self.ideal_angle = math.pi/2
         self.total_episodes = 0
         self.total_reward = 0
@@ -34,8 +37,7 @@ class OneWheelchairFollowWallEnv(Env):
         self.lidar_sample = []
         
         self.collisions = False
-        self.min_distance = 0.4
-        
+        self.min_distance = 0.2
         self.finished = False
         self.end_reached = False
         
@@ -43,9 +45,7 @@ class OneWheelchairFollowWallEnv(Env):
         self.rotation_counter = 0
         self.rotations = 0
         self.consecutive_rotations = 0
-        self.forward_reward = 0
-
-        
+        self.forward_reward = 0        
         
         self.map = 0
         self.start_points = []
@@ -58,7 +58,7 @@ class OneWheelchairFollowWallEnv(Env):
         self.reset_data()
         
         #ros topics and services
-        rospy.init_node('one_wheelchair_env_wall', anonymous=True)
+        rospy.init_node('one_wheelchair_env_wall_follow', anonymous=True)
 
         self.scan_topic = "/static_laser1"   
         self.twist_topic = "/cmd_vel1"
@@ -77,23 +77,25 @@ class OneWheelchairFollowWallEnv(Env):
         self.twist_pub = rospy.Publisher(self.twist_topic, Twist, queue_size=1)
 
         #learning env
-        linear_speed = 0.3
+        linear_speed = 0.2
         angular_speed = 0.5
         # TODO: divide case with 0 angular speed to 2 with low angular speed
         self.actions = [(linear_speed, -angular_speed),
                         (linear_speed, 0),
                         (linear_speed, angular_speed)]
-                        
+
         n_actions = (len(self.actions))
                         
         self.action_space = Discrete(n_actions)
 
-        self.observation_space = Box(low=np.array([[0.0, 0.0, 0.0]]), high=np.array([[10.0, math.pi, 0.0]]), shape=(1, 3))
+        self.observation_space = Box(low=np.array([0.0, 0.0]), high=np.array([10.0, math.pi]), shape=(2,), dtype=np.float64)
         
         while len(self.lidar_sample) != 46: pass
 
         # TODO: add front, side and back rays. Maybe a sample of the rays
-        self.state = np.array(self.get_min_dist_ray(self.lidar_sample))
+        min_dist, angle = self.get_min_dist_ray(self.lidar_sample)
+
+        self.state = np.array((min_dist - self.ideal_dist, angle))
 
 
     def step(self, action):
@@ -109,8 +111,9 @@ class OneWheelchairFollowWallEnv(Env):
         # OBS: It looks like this line tries to synchronize the current episode with the number of lidar readings
         #while self.episode == self.action_n: pass
 
-        self.state = np.array(self.get_min_dist_ray(self.lidar_sample))
-        
+        min_dist, angle = self.get_min_dist_ray(self.lidar_sample)
+        self.state = np.array((min_dist - self.ideal_dist, angle))
+
         done = False
         
         if self.steps < 4:
@@ -120,7 +123,7 @@ class OneWheelchairFollowWallEnv(Env):
         info = {}
 
         if self.collisions:
-            reward = -1
+            reward = -3
             done = True
             self.total_episodes += 1
             self.data['end_condition'][-1] = 'collision'
@@ -130,26 +133,36 @@ class OneWheelchairFollowWallEnv(Env):
             done = True
             self.total_episodes += 1
             self.success_episodes += 1
+
+            if self.adj_steps / self.total_steps > 0.90:
+                self.adjacent_episodes += 1
+            
             self.data['end_condition'][-1] = 'finished'
-            self.total_reward = 0
+            self.total_reward = 3
+            self.adjacencies.append(self.adj_steps / self.total_steps)
         elif self.episode > self.max_episodes:
+            reward = -(1 + self.total_reward)
             done = True
             self.total_episodes += 1
             self.data['end_condition'][-1] = 'time out'
             self.total_reward = 0
         else:
-            min_dist, min_angle, _ = self.state
             # TODO: se ambas as condições estiverem no intervalo definido reward += 1
-            safe_angle = 20*math.pi/180
+            safe_angle = 25*math.pi/180
             # dist_reward = max(0, 0.2 - (abs(min_dist - self.ideal_dist))) / 0.4
             dist_reward = 0
             angle_reward = 0
-            if 0.2 - (abs(min_dist - self.ideal_dist)) < 0:
+            if 0.1 - (abs(min_dist - self.ideal_dist)) < 0:
                 dist_reward = -0.1
             # angle_reward = max(0, (safe_angle) - (abs(min_angle - self.ideal_angle))) / (safe_angle*2)
-            if (safe_angle) - (abs(min_angle - self.ideal_angle)) < 0:
+            if (safe_angle) - (abs(angle - self.ideal_angle)) < 0:
                 angle_reward = -0.1
-            reward = dist_reward + angle_reward
+
+            if dist_reward == 0 and angle_reward == 0:
+                reward = 0.1
+                self.adj_steps += 1
+            else:
+                reward = dist_reward + angle_reward
             self.total_reward += reward
 
 
@@ -179,7 +192,7 @@ class OneWheelchairFollowWallEnv(Env):
                 min_dist = lidar_data[i]
                 min_angle = i*delta_ang
         
-        return min_dist, min_angle, lidar_data[0]
+        return min_dist, min_angle
     
     def render(self): pass
     
@@ -188,16 +201,23 @@ class OneWheelchairFollowWallEnv(Env):
 
         map = self.start_points[self.map]
 
-        x = map[1][0]
-        y = map[1][1]
-
-        theta = math.pi / 2 - 0.4
+        if map[1][2] == 'v':
+            x = map[1][0] 
+            y = map[1][1] - 0.2 + random.uniform(-0.05, 0.05)
+            theta = math.pi
+        else:
+            x = map[1][0] - 0.2 + random.uniform(-0.05, 0.05)
+            y = map[1][1]
+            theta = math.pi / 2
+        
+        if self.map_names[self.map] in self.overload_pos.keys():
+            _, _, x, y, theta = self.overload_pos[self.map_names[self.map]]
        
         self.change_robot_position("robot1", x, y, theta)
 
         target_x = map[2][0]
         target_y = map[2][1]
-        self.change_robot_position("prox", target_x, target_y, 0)
+        self.change_robot_position("prox", target_x - 0.2, target_y, 0)
 
         self.collisions = False
         self.finished = False
@@ -207,12 +227,12 @@ class OneWheelchairFollowWallEnv(Env):
         self.steps = 0
         self.naction1 = 0
         self.total_reward = 0
-        if hasattr(self, "last_execution_time"):
-            delattr(self, "last_execution_time")
 
         while len(self.lidar_sample) != 46: pass
 
-        self.state = np.array(self.get_min_dist_ray(self.lidar_sample))
+        min_dist, angle = self.get_min_dist_ray(self.lidar_sample)
+
+        self.state = np.array((min_dist - self.ideal_dist, angle))
 
         self.action_history = []
         self.rotation_counter = 0
@@ -237,14 +257,6 @@ class OneWheelchairFollowWallEnv(Env):
 
     def sample_lidar(self,data):
         if self.naction1 != self.steps: return
-
-        current_time = time.time()
-        if hasattr(self, 'last_execution_time'):
-            elapsed_time = current_time - self.last_execution_time
-            if elapsed_time < 0.5:
-                return
-        else:
-            self.last_execution_time = current_time
 
         self.change_robot_speed(1,0,0)
 
@@ -304,6 +316,8 @@ class OneWheelchairFollowWallEnv(Env):
         self.total_steps = 0
         self.forward_steps = 0
         self.adj_steps = 0
+        self.adjacent_episodes = 0
+        self.adjacencies = []
 
     def reset_data(self):
         self.data = {
